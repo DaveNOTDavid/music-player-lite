@@ -8,6 +8,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Menu;
 import android.widget.AdapterView;
@@ -20,7 +22,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.MediaController.MediaPlayerControl;
 
 import java.util.ArrayList;
@@ -58,6 +59,22 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     // Boolean flag that's used to address when the user interacts with the controls while playback
     // is paused since the MediaPlayer object may behave strangely.
     private boolean mPlaybackPaused = false;
+
+    // Phone state interface initialization in order to react accordingly when the user gets a
+    // phone call.
+    private PhoneStateListener mPhoneStateListener = new PhoneStateListener() {
+        @Override
+        public void onCallStateChanged(int state, String incomingNumber) {
+            switch (state) {
+                case TelephonyManager.CALL_STATE_RINGING:
+                    Log.d(LOG_TAG, "User's device ringing");
+
+                    // Pauses the player and the controller hides via onStop().
+                    pause();
+                    break;
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,7 +133,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     protected void onStop() {
         Log.d(LOG_TAG, "onStop(): Hide controller");
 
-        mController.hide(); // Hides the controller prior to the app being minimized
+        mController.hide(); // Hides the controller as the app gets minimized
 
         super.onStop();
     }
@@ -201,6 +218,13 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
      * Initializing/instantiating method.
      */
     private void init() {
+
+        // Phone initialization and registration for the interface.
+        TelephonyManager telephonyManager = (TelephonyManager)
+                getSystemService(Context.TELEPHONY_SERVICE);
+        telephonyManager.listen(mPhoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
+
+        // List and ListView initializations, respectively.
         mSongList = new ArrayList<>();
         mSongView = (ListView) findViewById(R.id.song_list);
 
