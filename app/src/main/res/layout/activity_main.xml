@@ -5,4 +5,4 @@
     android:id="@+id/song_list"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="dndproductions.musicplayerlite.MainActivity" />
+    tools:context="com.davenotdavid.musicplayerlite.MainActivity" />

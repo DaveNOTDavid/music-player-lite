@@ -1,4 +1,4 @@
-package dndproductions.musicplayerlite;
+package com.davenotdavid.musicplayerlite;
 
 import android.Manifest;
 import android.content.ContentResolver;
@@ -29,7 +29,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import dndproductions.musicplayerlite.MusicService.MusicBinder;
+import com.davenotdavid.musicplayerlite.MusicService.MusicBinder;
 
 /**
  * Music player app that initially retrieves the user's songs from their music library, and then

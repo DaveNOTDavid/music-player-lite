@@ -1,4 +1,4 @@
-package dndproductions.musicplayerlite;
+package com.davenotdavid.musicplayerlite;
 
 import android.content.Context;
 import android.widget.MediaController;

@@ -1,4 +1,4 @@
-package dndproductions.musicplayerlite;
+package com.davenotdavid.musicplayerlite;
 
 /**
  * Class used to model the data for a single audio file.
