@@ -16,6 +16,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.os.IBinder;
 import android.content.ComponentName;
@@ -73,6 +74,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
     // Widget field used for displaying a progress bar while running the loader.
     private ProgressBar mProgressBar;
+
+    // TextView that is displayed when the list is empty.
+    private TextView mEmptyStateTextView;
 
     // Phone state interface initialization in order to react accordingly when the user gets a
     // phone call.
@@ -211,6 +215,12 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
         // ListView initialization.
         mSongView = (ListView) findViewById(R.id.song_list);
+
+        // Initializes and then sets the empty state TextView to the ListView for when it should be
+        // empty.
+        mEmptyStateTextView = (TextView) findViewById(R.id.empty_view);
+        mEmptyStateTextView.setText(R.string.no_songs); // Initial state display.
+        mSongView.setEmptyView(mEmptyStateTextView);
 
         // Instantiates the following adapter that takes an empty array list as initial input.
         mSongAdapter = new SongAdapter(this, new ArrayList<Song>());
