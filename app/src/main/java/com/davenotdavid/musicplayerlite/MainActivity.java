@@ -1,7 +1,10 @@
 package com.davenotdavid.musicplayerlite;
 
 import android.Manifest;
+import android.app.LoaderManager;
+import android.app.LoaderManager.LoaderCallbacks;
 import android.content.ContentResolver;
+import android.content.Loader;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -35,7 +38,8 @@ import com.davenotdavid.musicplayerlite.MusicService.MusicBinder;
  * Music player app that initially retrieves the user's songs from their music library, and then
  * provides playback functionality.
  */
-public class MainActivity extends AppCompatActivity implements MediaPlayerControl {
+public class MainActivity extends AppCompatActivity implements MediaPlayerControl,
+        LoaderCallbacks<List<Song>> {
 
     // Log tag constant.
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
@@ -43,9 +47,15 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     // Constant used as a parameter to assist with the permission requesting process.
     private final int PERMISSION_CODE = 1;
 
+    // Boolean flag used for setting the song list to the Service class, accordingly.
+    private boolean permissionGranted;
+
     // Fields used to assist with a song list UI.
     private List<Song> mSongList;
     private ListView mSongView;
+
+    // Adapter for the list of songs.
+    private SongAdapter mSongAdapter;
 
     // Fields used for binding the interaction between the Activity and the Service class - the
     // music will be played in the Service class, but be controlled from the Activity.
@@ -59,6 +69,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     // Boolean flag that's used to address when the user interacts with the controls while playback
     // is paused since the MediaPlayer object may behave strangely.
     private boolean mPlaybackPaused = false;
+
+    // ID for one loader at most.
+    private static final int songLoaderID = 1;
 
     // Phone state interface initialization in order to react accordingly when the user gets a
     // phone call.
@@ -154,12 +167,11 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             // User accepts the permission(s).
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
+                // Assigns the flag to true to set the song list up.
+                permissionGranted = true;
+
                 // Invoker for rendering UI.
                 runUI();
-
-                // Manually passes the song list since the ServiceConnection instance was binded
-                // before the song list was formed.
-                mMusicService.setList(mSongList);
             } else { // User denies the permission.
                 Toast.makeText(this, "Please grant the permissions for Music Player Lite and come" +
                         " back again soon!", Toast.LENGTH_SHORT).show();
@@ -186,15 +198,21 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
      * Initializations/instantiations for UI.
      */
     private void runUI() {
+        Log.d(LOG_TAG, "runUI()");
 
         // Phone initialization and registration for the interface.
         TelephonyManager telephonyManager = (TelephonyManager)
                 getSystemService(Context.TELEPHONY_SERVICE);
         telephonyManager.listen(mPhoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
 
-        // List and ListView initializations, respectively.
-        mSongList = new ArrayList<>();
+        // ListView initialization.
         mSongView = (ListView) findViewById(R.id.song_list);
+
+        // Instantiates the following adapter that takes an empty array list as initial input.
+        mSongAdapter = new SongAdapter(this, new ArrayList<Song>());
+
+        // Sets the adapter on the list view so the list can be populated in the UI.
+        mSongView.setAdapter(mSongAdapter);
 
         // Sets each song with a functionality.
         mSongView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -211,22 +229,14 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             }
         });
 
-        // Invokes the iteration for adding songs.
-        getSongList();
-
-        // Sorts the data so that the song titles are presented alphabetically.
-        Collections.sort(mSongList, new Comparator<Song>(){
-            public int compare(Song a, Song b){
-                return a.getTitle().compareTo(b.getTitle());
-            }
-        });
-
-        // Custom adapter instantiation that displays the songs via the ListView.
-        SongAdapter songAdapter = new SongAdapter(this, mSongList);
-        mSongView.setAdapter(songAdapter);
-
         // Invokes the controller setup.
         setController();
+
+        // Retrieves a reference to the LoaderManager in order to interact with loaders.
+        LoaderManager loaderManager = getLoaderManager();
+
+        // Passes the song loader ID to be used regardless of configuration change.
+        loaderManager.initLoader(songLoaderID, null, this);
     }
 
     /**
@@ -311,38 +321,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
         // Sets the flag to false for the controller's duration and position purposes.
         if (mPlaybackPaused) mPlaybackPaused = false;
-    }
-
-    // Helper method used for retrieving audio file information.
-    public void getSongList() {
-        ContentResolver musicResolver = getContentResolver();
-
-        // Retrieves the URI for external music files.
-        Uri musicUri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-
-        // Queries the music files.
-        Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
-
-        // Initially checks to see if the data is valid.
-        if (musicCursor != null && musicCursor.moveToFirst()) {
-
-            // Column indexes used for retrieval purposes.
-            int idColumn = musicCursor.getColumnIndex
-                    (android.provider.MediaStore.Audio.Media._ID);
-            int titleColumn = musicCursor.getColumnIndex
-                    (android.provider.MediaStore.Audio.Media.TITLE);
-            int artistColumn = musicCursor.getColumnIndex
-                    (android.provider.MediaStore.Audio.Media.ARTIST);
-
-            // Iterates and adds new Song objects to the list, accordingly..
-            do {
-                long thisId = musicCursor.getLong(idColumn);
-                String thisTitle = musicCursor.getString(titleColumn);
-                String thisArtist = musicCursor.getString(artistColumn);
-                mSongList.add(new Song(thisId, thisTitle, thisArtist));
-            }
-            while (musicCursor.moveToNext());
-        }
     }
 
     // The following are MediaPlayerControl interface methods.
@@ -432,5 +410,56 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     @Override
     public int getAudioSessionId() {
         return 0;
+    }
+
+    @Override
+    public Loader<List<Song>> onCreateLoader(int i, Bundle bundle) {
+        Log.d(LOG_TAG, "onCreateLoader()");
+
+        return new SongLoader(this);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<List<Song>> loader, List<Song> songs) {
+
+        // Clears the adapter of previous song data.
+        mSongAdapter.clear();
+
+        // Sorts the data so that the song titles are presented alphabetically.
+        Collections.sort(songs, new Comparator<Song>(){
+            public int compare(Song a, Song b){
+                return a.getTitle().compareTo(b.getTitle());
+            }
+        });
+
+        // Runs the following should the song list not be null nor empty.
+        if (songs != null && !songs.isEmpty()) {
+
+            // Reassigns the value of the songs list field.
+            mSongList = songs;
+
+            // Manually passes the song list since the ServiceConnection instance was binded
+            // before the song list was even formed should the permission be granted initially.
+            // The flag will be set back to false on an orientation change.
+            if (permissionGranted) mMusicService.setList(mSongList);
+
+            // Adds the list of Songs to the adapter's dataset.
+            mSongAdapter.addAll(songs);
+        }
+
+        Log.d(LOG_TAG, "onLoadFinished()");
+    }
+
+    /**
+     * Invoked when the app closes.
+     *
+     * @param loader is the passed-in loader that could be addressed.
+     */
+    @Override
+    public void onLoaderReset(Loader<List<Song>> loader) {
+        Log.d(LOG_TAG, "onLoaderReset()");
+
+        // Clears out the existing data since the loader resetted.
+        mSongAdapter.clear();
     }
 }
