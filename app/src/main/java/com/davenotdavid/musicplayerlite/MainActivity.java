@@ -3,11 +3,8 @@ package com.davenotdavid.musicplayerlite;
 import android.Manifest;
 import android.app.LoaderManager;
 import android.app.LoaderManager.LoaderCallbacks;
-import android.content.ContentResolver;
 import android.content.Loader;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -18,6 +15,7 @@ import android.view.Menu;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 import android.os.IBinder;
 import android.content.ComponentName;
@@ -72,6 +70,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
     // ID for one loader at most.
     private static final int songLoaderID = 1;
+
+    // Widget field used for displaying a progress bar while running the loader.
+    private ProgressBar mProgressBar;
 
     // Phone state interface initialization in order to react accordingly when the user gets a
     // phone call.
@@ -199,6 +200,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
      */
     private void runUI() {
         Log.d(LOG_TAG, "runUI()");
+
+        // Initializes the progress bar.
+        mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
 
         // Phone initialization and registration for the interface.
         TelephonyManager telephonyManager = (TelephonyManager)
@@ -416,6 +420,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     public Loader<List<Song>> onCreateLoader(int i, Bundle bundle) {
         Log.d(LOG_TAG, "onCreateLoader()");
 
+        // Displays the progress bar while running the loader.
+        mProgressBar.setVisibility(View.VISIBLE);
+
         return new SongLoader(this);
     }
 
@@ -446,6 +453,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             // Adds the list of Songs to the adapter's dataset.
             mSongAdapter.addAll(songs);
         }
+
+        // Hides the progress bar after the loader finishes.
+        mProgressBar.setVisibility(View.INVISIBLE);
 
         Log.d(LOG_TAG, "onLoadFinished()");
     }
