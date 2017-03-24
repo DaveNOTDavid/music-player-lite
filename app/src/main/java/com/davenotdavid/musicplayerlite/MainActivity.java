@@ -93,26 +93,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             }
         }
 
-        // The following code either executes for versions older than M, or until the user accepts
-        // the in-app permission for the next sessions.
-        init();
-
-        // Invokes the iteration for adding songs.
-        getSongList();
-
-        // Sorts the data so that the song titles are presented alphabetically.
-        Collections.sort(mSongList, new Comparator<Song>(){
-            public int compare(Song a, Song b){
-                return a.getTitle().compareTo(b.getTitle());
-            }
-        });
-
-        // Custom adapter instantiation that displays the songs via the ListView.
-        SongAdapter songAdapter = new SongAdapter(this, mSongList);
-        mSongView.setAdapter(songAdapter);
-
-        // Invokes the controller setup.
-        setController();
+        // The following invoking method either executes for versions older than M, or until the
+        // user accepts the in-app permission for the next sessions.
+        runUI();
     }
 
     @Override
@@ -170,28 +153,13 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
             // User accepts the permission(s).
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                init();
 
-                // Invokes the iteration for adding songs.
-                getSongList();
-
-                // Sorts the data so that the song titles are presented alphabetically.
-                Collections.sort(mSongList, new Comparator<Song>(){
-                    public int compare(Song a, Song b){
-                        return a.getTitle().compareTo(b.getTitle());
-                    }
-                });
-
-                // Custom adapter instantiation that displays the songs via the ListView.
-                SongAdapter songAdapter = new SongAdapter(this, mSongList);
-                mSongView.setAdapter(songAdapter);
+                // Invoker for rendering UI.
+                runUI();
 
                 // Manually passes the song list since the ServiceConnection instance was binded
                 // before the song list was formed.
                 mMusicService.setList(mSongList);
-
-                // Invokes the controller setup.
-                setController();
             } else { // User denies the permission.
                 Toast.makeText(this, "Please grant the permissions for Music Player Lite and come" +
                         " back again soon!", Toast.LENGTH_SHORT).show();
@@ -215,9 +183,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     }
 
     /**
-     * Initializing/instantiating method.
+     * Initializations/instantiations for UI.
      */
-    private void init() {
+    private void runUI() {
 
         // Phone initialization and registration for the interface.
         TelephonyManager telephonyManager = (TelephonyManager)
@@ -242,6 +210,23 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                 if (mPlaybackPaused) mPlaybackPaused = false;
             }
         });
+
+        // Invokes the iteration for adding songs.
+        getSongList();
+
+        // Sorts the data so that the song titles are presented alphabetically.
+        Collections.sort(mSongList, new Comparator<Song>(){
+            public int compare(Song a, Song b){
+                return a.getTitle().compareTo(b.getTitle());
+            }
+        });
+
+        // Custom adapter instantiation that displays the songs via the ListView.
+        SongAdapter songAdapter = new SongAdapter(this, mSongList);
+        mSongView.setAdapter(songAdapter);
+
+        // Invokes the controller setup.
+        setController();
     }
 
     /**
