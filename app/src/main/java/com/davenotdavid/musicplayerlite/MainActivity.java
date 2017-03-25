@@ -46,9 +46,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     // Constant used as a parameter to assist with the permission requesting process.
     private final int PERMISSION_CODE = 1;
 
-    // Boolean flag used for setting the song list to the Service class, accordingly.
-    private boolean permissionGranted;
-
     // Fields used to assist with a song list UI.
     private List<Song> mSongList;
     private ListView mSongView;
@@ -60,7 +57,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     // music will be played in the Service class, but be controlled from the Activity.
     private MusicService mMusicService;
     private Intent mPlayIntent;
-    private boolean mMusicBound = false;
+    private boolean mMusicBound;
 
     // Field used for setting the controller up.
     private static MusicController mController;
@@ -77,6 +74,10 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
     // TextView that is displayed when the list is empty.
     private TextView mEmptyStateTextView;
+
+    // Boolean flag that's used to indicate whether the loader is done or not for the sake of
+    // setting up the song list, accordingly.
+    private boolean mLoadFinished;
 
     // Phone state interface initialization in order to react accordingly when the user gets a
     // phone call.
@@ -171,9 +172,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
             // User accepts the permission(s).
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                // Assigns the flag to true to set the song list up.
-                permissionGranted = true;
 
                 // Invoker for rendering UI.
                 runUI();
@@ -274,11 +272,10 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             // Gets service.
             mMusicService = binder.getService();
 
-            // Passes the song list.
-            mMusicService.setList(mSongList);
-
-            // Sets the boolean flag accordingly.
+            // Sets the flag to true and invokes a setter method for setting up the song list,
+            // respectively.
             mMusicBound = true;
+            setSongList();
         }
 
         @Override
@@ -455,10 +452,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             // Reassigns the value of the songs list field.
             mSongList = songs;
 
-            // Manually passes the song list since the ServiceConnection instance was binded
-            // before the song list was even formed should the permission be granted initially.
-            // The flag will be set back to false on an orientation change.
-            if (permissionGranted) mMusicService.setList(mSongList);
+            // Sets the flag to true and invokes setting up the song list, respectively.
+            mLoadFinished = true;
+            setSongList();
 
             // Adds the list of Songs to the adapter's dataset.
             mSongAdapter.addAll(songs);
@@ -481,5 +477,17 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
         // Clears out the existing data since the loader resetted.
         mSongAdapter.clear();
+    }
+
+    /**
+     * Setter method for the song list ONLY when both the service is bound AND the loader finishing
+     * up the load.
+     */
+    private void setSongList() {
+        if (mMusicBound && mLoadFinished) {
+            Log.d(LOG_TAG, "Setting up song list");
+
+            mMusicService.setList(mSongList);
+        }
     }
 }
