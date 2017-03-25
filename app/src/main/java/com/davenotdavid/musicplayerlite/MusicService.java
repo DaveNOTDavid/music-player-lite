@@ -46,6 +46,8 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     public void onCreate(){
         super.onCreate();
 
+        Log.d(LOG_TAG, "MusicService: onCreate()"); // Gets invoked once at most
+
         // Initializations.
         mSongPosition = 0;
         initMusicPlayer();
