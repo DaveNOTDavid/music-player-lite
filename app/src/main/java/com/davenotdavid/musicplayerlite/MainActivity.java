@@ -117,6 +117,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         runUI();
     }
 
+    /**
+     * Invoked either right after onCreate() or when the app is maximized back from being minimized.
+     */
     @Override
     protected void onStart() {
         super.onStart();
@@ -131,6 +134,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         }
     }
 
+    /**
+     * Invoked either when the app is minimized or during an orientation change.
+     */
     @Override
     protected void onStop() {
         Log.d(LOG_TAG, "onStop(): Hide controller");
