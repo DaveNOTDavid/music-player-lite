@@ -39,23 +39,22 @@ public class SongAdapter extends ArrayAdapter<Song> {
         ViewHolder holder;
 
         // Checks if the existing view is being reused, otherwise inflates the view.
-        View listItemView = convertView;
-        if (listItemView == null) {
-            listItemView = LayoutInflater.from(getContext()).inflate(R.layout.list_item, parent,
+        if (convertView == null) {
+            convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_item, parent,
                     false);
 
             // Initializes the rest of the child views for the sake of not looking them up
             // repeatedly.
             holder = new ViewHolder();
-            holder.song = (TextView) listItemView.findViewById(R.id.song_title);
-            holder.artist = (TextView) listItemView.findViewById(R.id.song_artist);
+            holder.song = (TextView) convertView.findViewById(R.id.song_title);
+            holder.artist = (TextView) convertView.findViewById(R.id.song_artist);
 
             // Associates the holder with the view for later lookup.
-            listItemView.setTag(holder);
+            convertView.setTag(holder);
         } else {
 
             // Otherwise, the view already exists so retrieve it.
-            holder = (ViewHolder) listItemView.getTag();
+            holder = (ViewHolder) convertView.getTag();
         }
 
         // Retrieves each song in the array with the position/index parameter.
@@ -67,7 +66,7 @@ public class SongAdapter extends ArrayAdapter<Song> {
             holder.artist.setText(currentSong.getArtist());
         }
 
-        return listItemView;
+        return convertView;
     }
 
     // ViewHolder class used to hold the set of views.
