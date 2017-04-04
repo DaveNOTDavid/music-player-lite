@@ -9,6 +9,11 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.widget.TextView;
 
+import io.gresse.hugo.vumeterlibrary.VuMeterView;
+
+import static com.davenotdavid.musicplayerlite.MainActivity.mPlaybackPaused;
+import static com.davenotdavid.musicplayerlite.MainActivity.songPosition;
+
 /**
  * Adapter that's used for displaying the songs to the ListView via MainActivity.
  */
@@ -64,11 +69,19 @@ public class SongAdapter extends ArrayAdapter<Song> {
             holder.artist.setText(currentSong.getArtist());
         }
 
-        // Hides the row for the song clicked. Otherwise, leaves it as visible.
-        if (position == MainActivity.songPosition) {
-            convertView.setVisibility(View.INVISIBLE);
+        // Displays an equalizer for the song that's currently being played. Otherwise, hides the
+        // view.
+        if (position == songPosition) {
+            holder.equalizer.setVisibility(View.VISIBLE);
+
+            // Pauses the equalizer should the pause button be pressed. Otherwise, resumes it.
+            if (mPlaybackPaused) {
+                holder.equalizer.pause();
+            } else {
+                holder.equalizer.resume(true);
+            }
         } else {
-            convertView.setVisibility(View.VISIBLE);
+            holder.equalizer.setVisibility(View.GONE);
         }
 
         return convertView;
@@ -79,6 +92,7 @@ public class SongAdapter extends ArrayAdapter<Song> {
     private class ViewHolder {
         TextView song;
         TextView artist;
+        VuMeterView equalizer;
 
         /**
          * Creates a {@link ViewHolder} object.
@@ -88,6 +102,7 @@ public class SongAdapter extends ArrayAdapter<Song> {
         private ViewHolder(View itemView) {
             song = (TextView) itemView.findViewById(R.id.song_title);
             artist = (TextView) itemView.findViewById(R.id.song_artist);
+            equalizer = (VuMeterView) itemView.findViewById(R.id.song_equalizer);
         }
     }
 }

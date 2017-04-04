@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
     // Boolean flag that's used to address when the user interacts with the controls while playback
     // is paused since the MediaPlayer object may behave strangely.
-    private boolean mPlaybackPaused = false;
+    public static boolean mPlaybackPaused = false;
 
     // ID for one loader at most.
     private static final int songLoaderID = 1;
@@ -356,15 +356,24 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     public void start() {
         Log.d(LOG_TAG, "start()");
 
-        mMusicService.go(); // Executes when the user resumes the paused song
+        // Sets the pause flag back to false and then updates the adapter's view.
+        mPlaybackPaused = false;
+        mSongAdapter.notifyDataSetChanged();
+
+        // Executes when the user resumes the paused song.
+        mMusicService.go();
     }
 
     @Override
     public void pause() {
         Log.d(LOG_TAG, "pause()");
 
+        // Sets the pause flag to true and then updates the adapter's view.
         mPlaybackPaused = true;
-        mMusicService.pausePlayer(); // Executes when the user pauses the current song
+        mSongAdapter.notifyDataSetChanged();
+
+        // Executes when the user pauses the current song.
+        mMusicService.pausePlayer();
     }
 
     /**
