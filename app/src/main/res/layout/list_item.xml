@@ -44,7 +44,7 @@
         android:layout_height="30dp"
         vumeter:vumeter_speed="10"
         vumeter:vumeter_blockNumber="3"
-        vumeter:vumeter_backgroundColor="@color/colorPrimary"
+        vumeter:vumeter_backgroundColor="@color/colorAccent"
         vumeter:vumeter_startOff="true"/>
 
 </RelativeLayout>
