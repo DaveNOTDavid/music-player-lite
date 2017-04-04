@@ -163,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         // Performs the following for the respective item.
         switch (item.getItemId()) {
             case R.id.option_now_playing:
-                mSongListView.setSelection(songPosition);
+                mSongListView.setSelection(songPosition); // Positions to 0 if less than 0
                 break;
             case R.id.option_shuffle:
                 mMusicService.setShuffle();
