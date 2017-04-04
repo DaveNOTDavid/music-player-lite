@@ -16,6 +16,9 @@
         <item
             android:id="@+id/option_shuffle"
             android:title="@string/option_shuffle" />
+        <item
+            android:id="@+id/option_auto_repeat"
+            android:title="@string/option_auto_repeat" />
     </group>
 
     <item

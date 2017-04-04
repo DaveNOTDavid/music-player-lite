@@ -84,8 +84,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     // Static int field used for tracking the song's position for UI-updating purposes.
     public static int songPosition = -1;
 
-    // Static boolean flag used for implementing shuffle functionality.
-    public static boolean mShuffle;
+    // Static boolean flags used for implementing shuffle and auto-repeat functionality,
+    // respectively.
+    public static boolean mShuffle, mAutoRepeat;
 
     // Phone state interface initialization in order to react accordingly when the user gets a
     // phone call.
@@ -175,6 +176,15 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                 } else {
                     item.setChecked(false);
                     mShuffle = false;
+                }
+                break;
+            case R.id.option_auto_repeat:
+                if (!item.isChecked()) {
+                    item.setChecked(true);
+                    mAutoRepeat = true;
+                } else {
+                    item.setChecked(false);
+                    mAutoRepeat = false;
                 }
                 break;
             case R.id.option_end:

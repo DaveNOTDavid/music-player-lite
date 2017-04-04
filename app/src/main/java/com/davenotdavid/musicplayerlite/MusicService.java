@@ -16,6 +16,10 @@ import android.widget.Toast;
 import java.util.List;
 import java.util.Random;
 
+import static com.davenotdavid.musicplayerlite.MainActivity.mAutoRepeat;
+import static com.davenotdavid.musicplayerlite.MainActivity.mShuffle;
+import static com.davenotdavid.musicplayerlite.MainActivity.mSongAdapter;
+import static com.davenotdavid.musicplayerlite.MainActivity.showController;
 import static com.davenotdavid.musicplayerlite.MainActivity.songPosition;
 
 /**
@@ -123,7 +127,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
             Log.e(LOG_TAG, "Error setting data source.", e);
         }
 
-        mPlayer.prepareAsync(); // Prepares its asynchronous task.
+        mPlayer.prepareAsync(); // Prepares its asynchronous task
     }
 
     @Override
@@ -132,7 +136,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
         mediaPlayer.start(); // Begins playback
 
-        MainActivity.showController(); // Updates the controller accordingly
+        showController(); // Updates the controller accordingly
     }
 
     @Override
@@ -147,13 +151,18 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     // Invoked when a song is complete.
     @Override
     public void onCompletion(MediaPlayer mediaPlayer) {
-        if (mPlayer.getCurrentPosition() > 0){
+        if (mPlayer.getCurrentPosition() > 0){ // Greater than the 0 millisecond mark
             mediaPlayer.reset();
-            playNext();
+
+            // Repeats the song (re-initializes mPlayer by setting the data source prior to
+            // preparing the task) should the auto-repeat option be checked. Otherwise, plays the
+            // next song.
+            if (mAutoRepeat) playSong();
+            else playNext();
         }
 
         // Updates the adapter's view accordingly.
-        MainActivity.mSongAdapter.notifyDataSetChanged();
+        mSongAdapter.notifyDataSetChanged();
     }
 
     // The following methods all apply to standard playback control functions that the user will
@@ -196,7 +205,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
      * song from the list should the boolean flag be true.
      */
     public void playNext(){
-        if (MainActivity.mShuffle){
+        if (mShuffle){
             int newSong = songPosition;
             while (newSong == songPosition){ // Loops until false so guaranteed random
                 newSong = mRandom.nextInt(mSongList.size());
