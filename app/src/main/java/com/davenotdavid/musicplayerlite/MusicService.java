@@ -16,6 +16,8 @@ import android.widget.Toast;
 import java.util.List;
 import java.util.Random;
 
+import static com.davenotdavid.musicplayerlite.MainActivity.songPosition;
+
 /**
  * A subclass of {@link Service} that assists with executing music playback continuously even when
  * the app is minimized.
@@ -32,9 +34,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     // Song list field.
     private List<Song> mSongList;
 
-    // Int field used for keeping track with the current position.
-    private int mSongPosition;
-
     // Initialization used to assist with the binding process.
     private final IBinder mMusicBinder = new MusicBinder();
 
@@ -49,7 +48,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         Log.d(LOG_TAG, "MusicService: onCreate()"); // Gets invoked once at most
 
         // Initializations.
-        mSongPosition = 0;
         initMusicPlayer();
         mRandom = new Random();
     }
@@ -76,15 +74,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
      */
     public void setList(List<Song> songs){
         mSongList = songs;
-    }
-
-    /**
-     * Setter method for retrieving the respective song's position/index from the Activity.
-     *
-     * @param position is the position/index of the song being played.
-     */
-    public void setSong(int position){
-        mSongPosition = position;
     }
 
     /**
@@ -131,7 +120,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         mPlayer.reset(); // Used also when the user plays songs progressively.
 
         // Retrieves the respective song.
-        Song song = mSongList.get(mSongPosition);
+        Song song = mSongList.get(songPosition);
 
         // Retrieves the song's ID.
         long currentSong = song.getID();
@@ -176,6 +165,9 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
             mediaPlayer.reset();
             playNext();
         }
+
+        // Updates the adapter's view accordingly.
+        MainActivity.mSongAdapter.notifyDataSetChanged();
     }
 
     // The following methods all apply to standard playback control functions that the user will
@@ -208,8 +200,8 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
      * Runs the following code for when the previous song is played.
      */
     public void playPrevious(){
-        mSongPosition--;
-        if (mSongPosition < 0) mSongPosition = mSongList.size() - 1;
+        songPosition--;
+        if (songPosition < 0) songPosition = mSongList.size() - 1;
         playSong();
     }
 
@@ -219,14 +211,14 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
      */
     public void playNext(){
         if (mShuffle){
-            int newSong = mSongPosition;
-            while (newSong == mSongPosition){ // Loops until false so guaranteed random
+            int newSong = songPosition;
+            while (newSong == songPosition){ // Loops until false so guaranteed random
                 newSong = mRandom.nextInt(mSongList.size());
             }
-            mSongPosition = newSong;
+            songPosition = newSong;
         } else {
-            mSongPosition++;
-            if (mSongPosition >= mSongList.size()) mSongPosition = 0;
+            songPosition++;
+            if (songPosition >= mSongList.size()) songPosition = 0;
         }
 
         playSong();

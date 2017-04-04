@@ -7,8 +7,7 @@ public class Song {
 
     // Fields used as data for storing for each track.
     private long id;
-    private String title;
-    private String artist;
+    private String title, artist;
 
     /**
      * Creates a {@link Song} object.
@@ -23,15 +22,23 @@ public class Song {
         artist = songArtist;
     }
 
-    // Getter methods.
+    /**
+     * Getter method for the song's ID.
+     */
     public long getID() {
         return id;
     }
 
+    /**
+     * Getter method for the song's title.
+     */
     public String getTitle() {
         return title;
     }
 
+    /**
+     * Getter method for the song's artist.
+     */
     public String getArtist() {
         return artist;
     }
@@ -63,6 +70,5 @@ public class Song {
         if (id != song.id) return false;
         if (title != null ? !title.equals(song.title) : song.title != null) return false;
         return artist != null ? artist.equals(song.artist) : song.artist == null;
-
     }
 }

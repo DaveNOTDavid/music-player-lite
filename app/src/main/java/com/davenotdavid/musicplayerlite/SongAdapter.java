@@ -14,6 +14,9 @@ import android.widget.TextView;
  */
 public class SongAdapter extends ArrayAdapter<Song> {
 
+    // Log tag constant.
+    private static final String LOG_TAG = SongAdapter.class.getSimpleName();
+
     /**
      * Provides a view for an AdapterView (ListView, GridView, and etc.).
      *
@@ -43,11 +46,8 @@ public class SongAdapter extends ArrayAdapter<Song> {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_item, parent,
                     false);
 
-            // Initializes the rest of the child views for the sake of not looking them up
-            // repeatedly.
-            holder = new ViewHolder();
-            holder.song = (TextView) convertView.findViewById(R.id.song_title);
-            holder.artist = (TextView) convertView.findViewById(R.id.song_artist);
+            // Instantiates the following class with the recycled view.
+            holder = new ViewHolder(convertView);
 
             // Associates the holder with the view for later lookup.
             convertView.setTag(holder);
@@ -57,21 +57,37 @@ public class SongAdapter extends ArrayAdapter<Song> {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        // Retrieves each song in the array with the position/index parameter.
+        // Initializes and references, and then sets the songs' details as texts, accordingly.
         Song currentSong = getItem(position);
-
-        // Sets the song's details as texts, accordingly.
         if (currentSong != null) {
             holder.song.setText(currentSong.getTitle());
             holder.artist.setText(currentSong.getArtist());
         }
 
+        // Hides the row for the song clicked. Otherwise, leaves it as visible.
+        if (position == MainActivity.songPosition) {
+            convertView.setVisibility(View.INVISIBLE);
+        } else {
+            convertView.setVisibility(View.VISIBLE);
+        }
+
         return convertView;
     }
 
-    // ViewHolder class used to hold the set of views.
-    private static class ViewHolder {
+    // ViewHolder class used to hold and initialize the set of child views so they don't get looked
+    // up repeatedly.
+    private class ViewHolder {
         TextView song;
         TextView artist;
+
+        /**
+         * Creates a {@link ViewHolder} object.
+         *
+         * @param itemView is the passed-in recycled view from the adapter's getView() method.
+         */
+        private ViewHolder(View itemView) {
+            song = (TextView) itemView.findViewById(R.id.song_title);
+            artist = (TextView) itemView.findViewById(R.id.song_artist);
+        }
     }
 }

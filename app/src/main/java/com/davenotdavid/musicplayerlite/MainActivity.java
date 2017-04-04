@@ -46,12 +46,11 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     // Constant used as a parameter to assist with the permission requesting process.
     private final int PERMISSION_CODE = 1;
 
-    // Fields used to assist with a song list UI.
+    // Song list field.
     private List<Song> mSongList;
-    private ListView mSongView;
 
     // Adapter for the list of songs.
-    private SongAdapter mSongAdapter;
+    public static SongAdapter mSongAdapter;
 
     // Fields used for binding the interaction between the Activity and the Service class - the
     // music will be played in the Service class, but be controlled from the Activity.
@@ -78,6 +77,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     // Boolean flag that's used to indicate whether the loader is done or not for the sake of
     // setting up the song list, accordingly.
     private boolean mLoadFinished;
+
+    // Static int field used for tracking the song's position for UI-updating purposes.
+    public static int songPosition = -1;
 
     // Phone state interface initialization in order to react accordingly when the user gets a
     // phone call.
@@ -218,28 +220,31 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         telephonyManager.listen(mPhoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
 
         // ListView initialization.
-        mSongView = (ListView) findViewById(R.id.song_list);
+        ListView songListView = (ListView) findViewById(R.id.song_list);
 
         // Initializes and then sets the empty state TextView to the ListView for when it should be
         // empty.
         mEmptyStateTextView = (TextView) findViewById(R.id.empty_view);
         mEmptyStateTextView.setText(R.string.no_songs); // Initial state display.
-        mSongView.setEmptyView(mEmptyStateTextView);
+        songListView.setEmptyView(mEmptyStateTextView);
 
         // Instantiates the following adapter that takes an empty array list as initial input.
         mSongAdapter = new SongAdapter(this, new ArrayList<Song>());
 
         // Sets the adapter on the list view so the list can be populated in the UI.
-        mSongView.setAdapter(mSongAdapter);
+        songListView.setAdapter(mSongAdapter);
 
         // Sets each song with a functionality.
-        mSongView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        songListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long l) {
                 Log.d(LOG_TAG, "Song item clicked");
 
-                // Sets the respective song in the Service, and then plays it.
-                mMusicService.setSong(position);
+                // Reassigns the current song position and updates the adapter's view.
+                songPosition = position;
+                mSongAdapter.notifyDataSetChanged();
+
+                // Plays the respective song.
                 mMusicService.playSong();
 
                 // Sets the flag to false for the controller's duration and position purposes.
@@ -328,6 +333,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
         // Sets the flag to false for the controller's duration and position purposes.
         if (mPlaybackPaused) mPlaybackPaused = false;
+
+        // Updates the adapter's views.
+        mSongAdapter.notifyDataSetChanged();
     }
 
     /**
@@ -338,6 +346,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
         // Sets the flag to false for the controller's duration and position purposes.
         if (mPlaybackPaused) mPlaybackPaused = false;
+
+        // Updates the adapter's views.
+        mSongAdapter.notifyDataSetChanged();
     }
 
     // The following are MediaPlayerControl interface methods.
