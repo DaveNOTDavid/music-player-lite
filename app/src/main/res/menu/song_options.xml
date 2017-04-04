@@ -10,11 +10,13 @@
         android:title="@string/option_now_playing"
         app:showAsAction="never" />
 
-    <item
-        android:id="@+id/option_shuffle"
-        android:orderInCategory="2"
-        android:title="@string/option_shuffle"
-        app:showAsAction="never" />
+    <group
+        android:checkableBehavior="all"
+        android:orderInCategory="2">
+        <item
+            android:id="@+id/option_shuffle"
+            android:title="@string/option_shuffle" />
+    </group>
 
     <item
         android:id="@+id/option_end"

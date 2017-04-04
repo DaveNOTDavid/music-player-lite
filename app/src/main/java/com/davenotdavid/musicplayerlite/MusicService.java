@@ -37,8 +37,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     // Initialization used to assist with the binding process.
     private final IBinder mMusicBinder = new MusicBinder();
 
-    // Fields used for implementing shuffle functionality.
-    private boolean mShuffle;
+    // Random field used to assist with implementing shuffle functionality.
     private Random mRandom;
 
     @Override
@@ -74,19 +73,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
      */
     public void setList(List<Song> songs){
         mSongList = songs;
-    }
-
-    /**
-     * Setter/toggler method for the shuffle functionality.
-     */
-    public void setShuffle(){
-        if (mShuffle) {
-            Toast.makeText(this, "Shuffle OFF", Toast.LENGTH_SHORT).show();
-            mShuffle = false;
-        } else {
-            Toast.makeText(this, "Shuffle ON", Toast.LENGTH_SHORT).show();
-            mShuffle = true;
-        }
     }
 
     /**
@@ -210,7 +196,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
      * song from the list should the boolean flag be true.
      */
     public void playNext(){
-        if (mShuffle){
+        if (MainActivity.mShuffle){
             int newSong = songPosition;
             while (newSong == songPosition){ // Loops until false so guaranteed random
                 newSong = mRandom.nextInt(mSongList.size());

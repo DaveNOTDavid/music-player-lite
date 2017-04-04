@@ -84,6 +84,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     // Static int field used for tracking the song's position for UI-updating purposes.
     public static int songPosition = -1;
 
+    // Static boolean flag used for implementing shuffle functionality.
+    public static boolean mShuffle;
+
     // Phone state interface initialization in order to react accordingly when the user gets a
     // phone call.
     private PhoneStateListener mPhoneStateListener = new PhoneStateListener() {
@@ -166,7 +169,13 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                 mSongListView.setSelection(songPosition); // Positions to 0 if less than 0
                 break;
             case R.id.option_shuffle:
-                mMusicService.setShuffle();
+                if (!item.isChecked()) {
+                    item.setChecked(true);
+                    mShuffle = true;
+                } else {
+                    item.setChecked(false);
+                    mShuffle = false;
+                }
                 break;
             case R.id.option_end:
                 stopService(mPlayIntent);
