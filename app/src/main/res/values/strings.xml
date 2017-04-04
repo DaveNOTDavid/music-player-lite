@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Music Player Lite</string>
     <string name="no_songs">No songs found in storage</string>
+    <string name="option_now_playing">Now Playing</string>
     <string name="option_shuffle">Shuffle</string>
     <string name="option_end">End</string>
 </resources>

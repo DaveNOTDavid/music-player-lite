@@ -49,6 +49,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     // Song list field.
     private List<Song> mSongList;
 
+    // ListView field of the songs.
+    private ListView mSongListView;
+
     // Adapter for the list of songs.
     public static SongAdapter mSongAdapter;
 
@@ -159,6 +162,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
         // Performs the following for the respective item.
         switch (item.getItemId()) {
+            case R.id.option_now_playing:
+                mSongListView.setSelection(songPosition);
+                break;
             case R.id.option_shuffle:
                 mMusicService.setShuffle();
                 break;
@@ -220,22 +226,22 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         telephonyManager.listen(mPhoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
 
         // ListView initialization.
-        ListView songListView = (ListView) findViewById(R.id.song_list);
+        mSongListView = (ListView) findViewById(R.id.song_list);
 
         // Initializes and then sets the empty state TextView to the ListView for when it should be
         // empty.
         mEmptyStateTextView = (TextView) findViewById(R.id.empty_view);
         mEmptyStateTextView.setText(R.string.no_songs); // Initial state display.
-        songListView.setEmptyView(mEmptyStateTextView);
+        mSongListView.setEmptyView(mEmptyStateTextView);
 
         // Instantiates the following adapter that takes an empty array list as initial input.
         mSongAdapter = new SongAdapter(this, new ArrayList<Song>());
 
         // Sets the adapter on the list view so the list can be populated in the UI.
-        songListView.setAdapter(mSongAdapter);
+        mSongListView.setAdapter(mSongAdapter);
 
         // Sets each song with a functionality.
-        songListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mSongListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long l) {
                 Log.d(LOG_TAG, "Song item clicked");
