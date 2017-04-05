@@ -6,8 +6,8 @@ package com.davenotdavid.musicplayerlite;
 public class Song {
 
     // Fields used as data for storing for each track.
-    private long id;
-    private String title, artist;
+    private long mId;
+    private String mTitle, mArtist;
 
     /**
      * Creates a {@link Song} object.
@@ -17,30 +17,30 @@ public class Song {
      * @param songArtist is the artist of the song.
      */
     public Song(long songID, String songTitle, String songArtist) {
-        id = songID;
-        title = songTitle;
-        artist = songArtist;
+        mId = songID;
+        mTitle = songTitle;
+        mArtist = songArtist;
     }
 
     /**
      * Getter method for the song's ID.
      */
     public long getID() {
-        return id;
+        return mId;
     }
 
     /**
      * Getter method for the song's title.
      */
     public String getTitle() {
-        return title;
+        return mTitle;
     }
 
     /**
      * Getter method for the song's artist.
      */
     public String getArtist() {
-        return artist;
+        return mArtist;
     }
 
     /**
@@ -49,9 +49,9 @@ public class Song {
     @Override
     public String toString() {
         return "Song{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", artist='" + artist + '\'' +
+                "id=" + mId +
+                ", title='" + mTitle + '\'' +
+                ", artist='" + mArtist + '\'' +
                 '}';
     }
 
@@ -67,8 +67,8 @@ public class Song {
 
         Song song = (Song) o;
 
-        if (id != song.id) return false;
-        if (title != null ? !title.equals(song.title) : song.title != null) return false;
-        return artist != null ? artist.equals(song.artist) : song.artist == null;
+        if (mId != song.mId) return false;
+        if (mTitle != null ? !mTitle.equals(song.mTitle) : song.mTitle != null) return false;
+        return mArtist != null ? mArtist.equals(song.mArtist) : song.mArtist == null;
     }
 }
