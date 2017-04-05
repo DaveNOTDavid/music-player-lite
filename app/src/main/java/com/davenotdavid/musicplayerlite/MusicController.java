@@ -1,6 +1,7 @@
 package com.davenotdavid.musicplayerlite;
 
 import android.content.Context;
+import android.view.KeyEvent;
 import android.widget.MediaController;
 
 /**
@@ -11,6 +12,9 @@ import android.widget.MediaController;
  */
 public class MusicController extends MediaController {
 
+    // Context field used to reference MainActivity's UI.
+    private Context mContext;
+
     /**
      * Creates a {@link MusicController} object.
      *
@@ -18,13 +22,28 @@ public class MusicController extends MediaController {
      */
     public MusicController(Context context){
         super(context);
+        mContext = context;
     }
 
     /**
      * Overrides the following to stop the control bar from being hidden within three seconds.
      */
     @Override
-    public void hide(){
+    public void hide(){}
 
+    /**
+     * Invokes MainActivity's onBackPressed() method when the back navigation key is pressed while
+     * the controller is displayed.
+     *
+     * @param event is the object that's used to reference the back navigation key.
+     */
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (event.getKeyCode() == KeyEvent.KEYCODE_BACK){
+            ((MainActivity) mContext).onBackPressed();
+            return true;
+        }
+
+        return super.dispatchKeyEvent(event);
     }
 }

@@ -3,9 +3,11 @@ package com.davenotdavid.musicplayerlite;
 import android.Manifest;
 import android.app.LoaderManager;
 import android.app.LoaderManager.LoaderCallbacks;
+import android.content.DialogInterface;
 import android.content.Loader;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.telephony.PhoneStateListener;
@@ -540,5 +542,26 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
             mMusicService.setList(mSongList);
         }
+    }
+
+    /**
+     * Invoked when the user presses the navigation key, back button.
+     */
+    @Override
+    public void onBackPressed() {
+        Log.d(LOG_TAG, "onBackPressed()");
+
+        new AlertDialog.Builder(this)
+                .setTitle("Music Player Lite")
+                .setMessage("Are you sure you want to exit the app?")
+                .setNegativeButton(android.R.string.no, null)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface arg0, int arg1) {
+
+                        // Force-closes the app.
+                        System.exit(0);
+                    }
+                }).create().show();
     }
 }

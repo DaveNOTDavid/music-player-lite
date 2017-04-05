@@ -9,9 +9,7 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Binder;
-import android.os.PowerManager;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.util.List;
 import java.util.Random;
@@ -90,6 +88,8 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     @Override
     public IBinder onBind(Intent intent) {
+        Log.d(LOG_TAG, "onBind()");
+
         return mMusicBinder;
     }
 
