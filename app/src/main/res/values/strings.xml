@@ -1,8 +1,13 @@
 <resources>
     <string name="app_name">Music Player Lite</string>
+    <string name="toast_grant_permissions">Please grant the permissions for Music Player Lite and come back again soon!</string>
     <string name="no_songs">No songs found in storage</string>
     <string name="option_now_playing">Now Playing</string>
     <string name="option_shuffle">Shuffle</string>
     <string name="option_auto_repeat">Auto-repeat</string>
     <string name="option_end">End</string>
+    <string name="toast_file_not_found">File not found</string>
+    <string name="toast_song_curr_playing">Song is currently playing at the moment!</string>
+    <string name="dialog_quit_app_confirm">Are you sure you want to exit the app?</string>
+    <string name="dialog_song_error_title">Song Error</string>
 </resources>

@@ -5,6 +5,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.provider.MediaStore;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -43,31 +44,31 @@ public class SongLoader extends AsyncTaskLoader<List<Song>> {
         // on.
         List<Song> songList = new ArrayList<>();
 
+        // The following allows access to the content model.
         ContentResolver musicResolver = getContext().getContentResolver();
 
         // Retrieves the URI for external music files.
-        Uri musicUri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        Uri musicUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
 
-        // Queries the music files.
+        // Queries the music files into a cursor, or database table, to permit read-write access.
         Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
 
         // Initially checks to see if the data is valid.
         if (musicCursor != null && musicCursor.moveToFirst()) {
 
-            // Column indexes used for retrieval purposes.
-            int idColumn = musicCursor.getColumnIndex
-                    (android.provider.MediaStore.Audio.Media._ID);
-            int titleColumn = musicCursor.getColumnIndex
-                    (android.provider.MediaStore.Audio.Media.TITLE);
-            int artistColumn = musicCursor.getColumnIndex
-                    (android.provider.MediaStore.Audio.Media.ARTIST);
+            // References each database column.
+            int idColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media._ID);
+            int titleColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media.TITLE);
+            int artistColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media.ARTIST);
+            int pathColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media.DATA);
 
-            // Iterates and adds new Song objects to the list, accordingly..
+            // Iterates and adds each database row into the song list.
             do {
-                long thisId = musicCursor.getLong(idColumn);
-                String thisTitle = musicCursor.getString(titleColumn);
-                String thisArtist = musicCursor.getString(artistColumn);
-                songList.add(new Song(thisId, thisTitle, thisArtist));
+                long songId = musicCursor.getLong(idColumn);
+                String songTitle = musicCursor.getString(titleColumn);
+                String songArtist = musicCursor.getString(artistColumn);
+                String songPath = musicCursor.getString(pathColumn);
+                songList.add(new Song(songId, songTitle, songArtist, songPath));
             }
             while (musicCursor.moveToNext());
         }

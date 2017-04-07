@@ -1,6 +1,7 @@
 package com.davenotdavid.musicplayerlite;
 
 import android.app.Service;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.IBinder;
@@ -9,6 +10,7 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Binder;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 
 import java.util.List;
@@ -127,7 +129,18 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
             Log.e(LOG_TAG, "Error setting data source.", e);
         }
 
-        mPlayer.prepareAsync(); // Prepares its asynchronous task
+        // Tries and prepares its asynchronous task. Otherwise, a dialog is displayed when an
+        // IllegalStateException is caught.
+        try {
+            mPlayer.prepareAsync();
+        } catch (IllegalStateException e) {
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.dialog_song_error_title)
+                    .setMessage("\"" + song.getTitle() + "\" could not be played")
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface arg0, int arg1) {}
+                    }).create().show();
+        }
     }
 
     @Override

@@ -20,16 +20,16 @@ public class MusicController extends MediaController {
      *
      * @param context is the Activity's context.
      */
-    public MusicController(Context context){
+    public MusicController(Context context) {
         super(context);
         mContext = context;
     }
 
     /**
-     * Overrides the following to stop the control bar from being hidden within three seconds.
+     * Overrides the following to prevent the controller from being hidden at random times.
      */
     @Override
-    public void hide(){}
+    public void hide() {}
 
     /**
      * Invokes MainActivity's onBackPressed() method when the back navigation key is pressed while

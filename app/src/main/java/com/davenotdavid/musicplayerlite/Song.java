@@ -7,7 +7,7 @@ public class Song {
 
     // Fields used as data for storing for each track.
     private long mId;
-    private String mTitle, mArtist;
+    private String mTitle, mArtist, mPath;
 
     /**
      * Creates a {@link Song} object.
@@ -15,11 +15,13 @@ public class Song {
      * @param songID is the ID of the song.
      * @param songTitle is the title of the song.
      * @param songArtist is the artist of the song.
+     * @param songPath is the file path of the song.
      */
-    public Song(long songID, String songTitle, String songArtist) {
+    public Song(long songID, String songTitle, String songArtist, String songPath) {
         mId = songID;
         mTitle = songTitle;
         mArtist = songArtist;
+        mPath = songPath;
     }
 
     /**
@@ -44,14 +46,22 @@ public class Song {
     }
 
     /**
+     * Getter method for the song's file path.
+     */
+    public String getPath() {
+        return mPath;
+    }
+
+    /**
      * Converts a {@link Song} object to a string.
      */
     @Override
     public String toString() {
         return "Song{" +
-                "id=" + mId +
-                ", title='" + mTitle + '\'' +
-                ", artist='" + mArtist + '\'' +
+                "mId=" + mId +
+                ", mTitle='" + mTitle + '\'' +
+                ", mArtist='" + mArtist + '\'' +
+                ", mPath='" + mPath + '\'' +
                 '}';
     }
 
@@ -69,6 +79,8 @@ public class Song {
 
         if (mId != song.mId) return false;
         if (mTitle != null ? !mTitle.equals(song.mTitle) : song.mTitle != null) return false;
-        return mArtist != null ? mArtist.equals(song.mArtist) : song.mArtist == null;
+        if (mArtist != null ? !mArtist.equals(song.mArtist) : song.mArtist != null) return false;
+        return mPath != null ? mPath.equals(song.mPath) : song.mPath == null;
+
     }
 }

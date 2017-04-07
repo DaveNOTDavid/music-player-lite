@@ -3,16 +3,22 @@ package com.davenotdavid.musicplayerlite;
 import android.Manifest;
 import android.app.LoaderManager;
 import android.app.LoaderManager.LoaderCallbacks;
+import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.DialogInterface;
 import android.content.Loader;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Build;
+import android.provider.MediaStore;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -70,8 +76,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     // is paused since the MediaPlayer object may behave strangely.
     public static boolean mPlaybackPaused = false;
 
-    // ID for one loader at most.
-    private static final int songLoaderID = 1;
+    // Loader ID field that gets incremented whenever a user deletes a song.
+    private int songLoaderID = 1;
 
     // Widget field used for displaying a progress bar while running the loader.
     private ProgressBar mProgressBar;
@@ -85,6 +91,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
     // Static int field used for tracking the song's position for UI-updating purposes.
     public static int songPosition = -1;
+
+    // Int field used for tracking the song's position only for menu-option purposes.
+    private int mSongPositionOptions;
 
     // Static boolean flags used for implementing shuffle and auto-repeat functionality,
     // respectively.
@@ -150,10 +159,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
      */
     @Override
     protected void onStop() {
-        Log.d(LOG_TAG, "onStop(): Hide controller");
-
-        mController.hide(); // Hides the controller as the app gets minimized
-
+        Log.d(LOG_TAG, "onStop()");
         super.onStop();
     }
 
@@ -211,8 +217,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                 // Invoker for rendering UI.
                 runUI();
             } else { // User denies the permission.
-                Toast.makeText(this, "Please grant the permissions for Music Player Lite and come" +
-                        " back again soon!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.toast_grant_permissions, Toast.LENGTH_SHORT).show();
 
                 // Runs a thread for a slight delay prior to shutting down the app.
                 Thread mthread = new Thread() {
@@ -261,6 +266,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         // Sets the adapter on the list view so the list can be populated in the UI.
         mSongListView.setAdapter(mSongAdapter);
 
+        // Registers the list view for a context menu of song options.
+        registerForContextMenu(mSongListView);
+
         // Sets each song with a functionality.
         mSongListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -279,6 +287,21 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             }
         });
 
+        // Sets the list view long-clickable with the following functionality.
+        mSongListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long l) {
+
+                // Reassigns the current song position.
+                mSongPositionOptions = position;
+
+                // Opens up the context menu of song options.
+                openContextMenu(mSongListView);
+
+                return true;
+            }
+        });
+
         // Invokes the controller setup.
         setController();
 
@@ -287,6 +310,101 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
         // Passes the song loader ID to be used regardless of configuration change.
         loaderManager.initLoader(songLoaderID, null, this);
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo
+            menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+
+        // References the current song that was long-clicked.
+        Song song = mSongAdapter.getItem(mSongPositionOptions);
+
+        // Sets the menu's title to the respective song's title.
+        menu.setHeaderTitle(song.getTitle());
+
+        // Adds the following menu options.
+        menu.add(0, v.getId(), 0, "Delete");
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+
+        // Runs code for the following menu option should the selected item match the title, and the
+        // song currently playing not be attempted to delete. Otherwise, displays a Toast message.
+        if (item.getTitle().equals("Delete") && mSongPositionOptions != songPosition) {
+
+            // References the current song.
+            final Song song = mSongAdapter.getItem(mSongPositionOptions);
+
+            // Displays a dialog to confirm whether the user really wants to delete the song or not.
+            new AlertDialog.Builder(this)
+                    .setMessage("Are you sure you want to delete \"" + song.getTitle() + "\"?")
+                    .setNegativeButton(android.R.string.no, null)
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+
+                        public void onClick(DialogInterface arg0, int arg1) {
+
+                            // Decrements the position of the song currently playing if the deleted
+                            // song is above it. Note that the current position wouldn't be
+                            // impacted if the deleted song is below.
+                            if (mSongPositionOptions < songPosition) songPosition--;
+
+                            // Sets up the projection cursor-parameter (only the ID is required).
+                            String[] projection = {MediaStore.Audio.Media._ID};
+
+                            // Matches on the file path for the following cursor-parameters.
+                            String selection = MediaStore.Audio.Media.DATA + " = ?";
+                            String[] selectionArgs = new String[]{song.getPath()};
+
+                            // Queries for the ID of the media matching the file path.
+                            Uri musicUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+                            ContentResolver musicResolver = getContentResolver();
+                            Cursor musicCursor = musicResolver.query(
+                                    musicUri,
+                                    projection,
+                                    selection,
+                                    selectionArgs,
+                                    null);
+
+                            // Addresses the path's row in the database to delete via the content
+                            // resolver which ultimately removes the song file. Otherwise, displays
+                            // a Toast message.
+                            if (musicCursor != null) {
+                                if (musicCursor.moveToFirst()) {
+                                    long id = musicCursor.getLong(
+                                            musicCursor.getColumnIndexOrThrow(
+                                                    MediaStore.Audio.Media._ID));
+                                    Uri deleteUri = ContentUris.withAppendedId(
+                                            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id);
+                                    musicResolver.delete(deleteUri, null, null);
+
+                                    Toast.makeText(
+                                            getApplicationContext(),
+                                            song.getTitle() + " deleted",
+                                            Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Toast.makeText(
+                                            getApplicationContext(),
+                                            R.string.toast_file_not_found,
+                                            Toast.LENGTH_SHORT).show();
+                                }
+
+                                musicCursor.close();
+                            }
+
+                            // Increments the loader ID to eventually rerun the whole loader process
+                            // to render an updated ListView.
+                            songLoaderID++;
+                            LoaderManager loaderManager = getLoaderManager();
+                            loaderManager.initLoader(songLoaderID, null, MainActivity.this);
+                        }
+                    }).create().show();
+        } else if (item.getTitle().equals("Delete") && mSongPositionOptions == songPosition) {
+            Toast.makeText(this, R.string.toast_song_curr_playing, Toast.LENGTH_SHORT).show();
+        }
+
+        return true;
     }
 
     /**
@@ -446,6 +564,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
     @Override
     public boolean isPlaying() {
+        Log.d(LOG_TAG, "isPlaying()");
+
         if (mMusicService != null && mMusicBound) return mMusicService.isPlaying();
 
         return false;
@@ -516,6 +636,10 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         // Hides the progress bar after the loader finishes.
         mProgressBar.setVisibility(View.INVISIBLE);
 
+        // Views the current song in-focus - positions to 0, the first row, if songPosition is
+        // negative. This is particularly useful when the app is maximized back into session.
+        mSongListView.setSelection(songPosition);
+
         Log.d(LOG_TAG, "onLoadFinished()");
     }
 
@@ -552,8 +676,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         Log.d(LOG_TAG, "onBackPressed()");
 
         new AlertDialog.Builder(this)
-                .setTitle("Music Player Lite")
-                .setMessage("Are you sure you want to exit the app?")
+                .setTitle(R.string.app_name)
+                .setMessage(R.string.dialog_quit_app_confirm)
                 .setNegativeButton(android.R.string.no, null)
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 
